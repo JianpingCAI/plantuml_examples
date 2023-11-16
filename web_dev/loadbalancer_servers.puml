@@ -1,0 +1,35 @@
+@startuml
+skinparam componentStyle uml2
+
+actor CLIENT
+node LOADBALANCER
+node "WebSocket Server 1" as WEBSOCKET_SERVER1
+node "WebSocket Server 2" as WEBSOCKET_SERVER2
+node "Health Check Service" as HEALTH_CHECK
+
+' Client to Load Balancer
+CLIENT -down-> LOADBALANCER : 1: WebSocket Request
+
+' Load Balancer to Servers
+LOADBALANCER -left-> WEBSOCKET_SERVER1 : 2: Distributes Request
+LOADBALANCER -right-> WEBSOCKET_SERVER2 : 2: Distributes Request
+
+' Servers to Load Balancer
+WEBSOCKET_SERVER1 -up-> LOADBALANCER : 3: Response (if selected)
+WEBSOCKET_SERVER2 -up-> LOADBALANCER : 3: Response (if selected)
+
+' Load Balancer to Client
+LOADBALANCER -up-> CLIENT : 4: Forwards Response
+
+' Load Balancer to Health Check Service
+LOADBALANCER -down-> HEALTH_CHECK : 5: Periodic Health Check
+
+' Health Check Service to Servers
+HEALTH_CHECK -left-> WEBSOCKET_SERVER1 : 6: Check Status
+HEALTH_CHECK -right-> WEBSOCKET_SERVER2 : 6: Check Status
+
+' Servers to Health Check Service
+WEBSOCKET_SERVER1 -down-> HEALTH_CHECK : 7: Status Response
+WEBSOCKET_SERVER2 -down-> HEALTH_CHECK : 7: Status Response
+
+@enduml
